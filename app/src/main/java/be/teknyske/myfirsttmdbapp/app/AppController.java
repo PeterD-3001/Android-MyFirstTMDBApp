@@ -67,7 +67,7 @@ public class AppController extends Application
             // AsyncTask 2
             fetchMovieInfo.execute();
 
-            //
+            // This is too early !!!
             //AppController.FetchOneMovieInfo fetchOneMovieInfo = new AppController.FetchOneMovieInfo();
             //fetchOneMovieInfo.execute();
 
@@ -137,12 +137,7 @@ public class AppController extends Application
             }
         }
 
-    public void fetchOneMovie(int movieId)
-        {
-        AppController.FetchOneMovieInfo fetchOneMovieInfo = new AppController.FetchOneMovieInfo();
-        fetchOneMovieInfo.execute(movieId);
 
-        }
 
     // ASYNC TASK 1
     private class FetchMovieInfo extends AsyncTask<Void, Void, ResultList<MovieBasic>>
@@ -201,16 +196,16 @@ public class AppController extends Application
 
     // ASYNC TASK 3:
     private class FetchOneMovieInfo extends AsyncTask<Integer, Void, MovieInfo>
+        // <input-type / progress / output-type>
     {
         @Override
         protected MovieInfo doInBackground(Integer ... params)
-        // Meaning: params is an array of an unknow numver of parameters of type Integer
+        // Meaning: params is an array of an unknow number of parameters of type Integer
             {
             try
                 {
                 return api.getMovieInfo(params [0].intValue(), "en");
                 // Parameter params[0] is the Id of the selected movie !
-
                 }
             catch (MovieDbException e)
                 {
@@ -229,10 +224,14 @@ public class AppController extends Application
             movieDetailIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
             movieDetailIntent.putExtra("Movie", movieInfo);
             startActivity(movieDetailIntent);
-
-
             }
     }
+
+    public void fetchOneMovie(int movieId)
+        {
+        AppController.FetchOneMovieInfo fetchOneMovieInfo = new AppController.FetchOneMovieInfo();
+        fetchOneMovieInfo.execute(movieId);
+        }
 
 
 

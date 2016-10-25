@@ -57,38 +57,24 @@ public class MovieListAdapter extends RecyclerView.Adapter<MovieViewHolder>
         holder.getTitleTextView().setText(currentMovie.getTitle());
         holder.getDescriptionTextview().setText(currentMovie.getOverview());
         holder.getReleaseDateView().setText(currentMovie.getReleaseDate());
-        holder.getCardView().setOnClickListener(new View.OnClickListener()
+        holder.getCardView().setOnClickListener
+                (new View.OnClickListener()
                         {
                             @Override
                             public void onClick(View v)
                                 {
-                                int movieId = currentMovie.getId();
-                                // FetchOneMovieInfo fetchOneMovieInfo = new AppController.getInstance().FetchOneMovieInfo();
-                                // AsyncTask 2
-                                AppController.getInstance().fetchOneMovie(movieId);
+                                // start AsyncTask fetchOneMovie indirectly from AppController instead of directly from here!!!
+                                AppController.getInstance().fetchOneMovie(currentMovie.getId());
                                 }
-
-
                         }
-
                       );
 
+        // toegevoegd
+        URL imageUrl = AppController.getInstance().createMyImageUrl(currentMovie.getPosterPath(), "w185");
+        ImageLoader.getInstance().displayImage(imageUrl.toString(),holder.getImageView());
+        animate(holder);
 
-    // toegevoegd
-    URL imageUrl = AppController.getInstance().createMyImageUrl(currentMovie.getPosterPath(), "w185");
-    ImageLoader.getInstance().
-
-    displayImage(imageUrl.toString(),holder
-
-    .
-
-    getImageView()
-
-    );
-
-    animate(holder);
-
-}
+        }
 
     @Override
     public int getItemCount()
