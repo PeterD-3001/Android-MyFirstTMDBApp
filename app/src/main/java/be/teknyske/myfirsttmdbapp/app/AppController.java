@@ -33,6 +33,16 @@ import static be.teknyske.myfirsttmdbapp.R.id.recyclerView;
  * Created by cerseilannister on 25/10/16.
  **/
 
+/* Suggesties voor bijkomende features:
+   https://developers.themoviedb.org/3/getting-started
+      - Navigation Bar gebruiken
+      - Genre selecteren (Dialog)
+      - Search (magnifying glass) by Title
+      - To watch / watched list
+      - ConnectionDetector
+
+*/
+
 // Inferno ID = 207932
 
 public class AppController extends Application
