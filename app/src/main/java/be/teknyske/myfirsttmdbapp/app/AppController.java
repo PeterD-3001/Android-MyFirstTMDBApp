@@ -11,6 +11,8 @@ import com.nostra13.universalimageloader.core.ImageLoaderConfiguration;
 import com.nostra13.universalimageloader.core.display.FadeInBitmapDisplayer;
 import com.omertron.themoviedbapi.MovieDbException;
 import com.omertron.themoviedbapi.TheMovieDbApi;
+import com.omertron.themoviedbapi.model.artwork.Artwork;
+import com.omertron.themoviedbapi.model.artwork.ArtworkMedia;
 import com.omertron.themoviedbapi.model.config.Configuration;
 import com.omertron.themoviedbapi.model.credits.MediaCreditCast;
 import com.omertron.themoviedbapi.model.discover.Discover;
@@ -28,6 +30,7 @@ import be.teknyske.myfirsttmdbapp.MovieDetailActivity;
 import be.teknyske.myfirsttmdbapp.MovieListAdapter;
 import be.teknyske.myfirsttmdbapp.R;
 
+import static android.R.id.list;
 import static be.teknyske.myfirsttmdbapp.R.id.image;
 import static be.teknyske.myfirsttmdbapp.R.id.recyclerView;
 
@@ -63,6 +66,7 @@ public class AppController extends Application
     private List<MovieBasic> movieList = new ArrayList<>();
     // public ?
     public List<MediaCreditCast> cast = new ArrayList<>();
+    public List<Artwork> artworkResultList = new ArrayList<>();
 
     // Appcontroller
     public static synchronized AppController getInstance()
@@ -85,12 +89,8 @@ public class AppController extends Application
             // AsyncTask 2
             AppController.FetchMovieInfoTask fetchMovieInfo = new AppController.FetchMovieInfoTask();
             fetchMovieInfo.execute();
-
-            // This is too early !!!
-            //AppController.FetchOneMovieInfo fetchOneMovieInfo = new AppController.FetchOneMovieInfo();
-            //fetchOneMovieInfo.execute();
-
-            } catch (MovieDbException e)
+            }
+        catch (MovieDbException e)
             {
             e.printStackTrace();
             Log.e("TheMovieDBAPI", "Error: " + e.getMessage());
@@ -133,6 +133,7 @@ public class AppController extends Application
         return imageURL;
         }
 
+
     // ADD/REMOVE SUBSCRIPTIONS
     public void addOnMovieListChangedListener(OnMovieListChangedListener listener)
         {
@@ -143,6 +144,7 @@ public class AppController extends Application
         {
         allListeners.remove(listener);
         }
+
 
     // NOTIFY ALL LISTENERS WHEN MOVIELIST-CHANGES
     // OnMovieListChanged is implemented by the listener itself
@@ -221,7 +223,8 @@ public class AppController extends Application
             {
             return api.getMovieInfo(params[0].intValue(), "en");
             // Parameter params[0] is the Id of the selected movie !
-            } catch (MovieDbException e)
+            }
+        catch (MovieDbException e)
             {
             e.printStackTrace();
             }
@@ -266,6 +269,36 @@ public class AppController extends Application
 
             cast.clear();
             cast.addAll(media.getCast());
+            //notifyAllListeners();
+
+            }
+    }
+
+    // =============================== ASYNC TASK 5 ===========================================
+    private class FetchImagesFromMovieTask extends AsyncTask<Integer, Void, ResultList<Artwork>>
+    {
+        @Override
+        protected ResultList<Artwork> doInBackground(Integer... params)
+            {
+            try
+                {
+                return api.getMovieImages(params[0].intValue(),"en");
+                }
+            catch (MovieDbException e1)
+                {
+                e1.printStackTrace();
+                }
+            return null;
+            }
+
+        @Override
+        protected void onPostExecute(ResultList<Artwork> resultList)
+            {
+            super.onPostExecute(resultList);
+            // todo intent movieDetails, pass through movieInfo in extras
+
+            artworkResultList.clear();
+            artworkResultList.addAll(resultList.getResults());
             notifyAllListeners();
 
             }
@@ -278,10 +311,16 @@ public class AppController extends Application
         fetchOneMovieInfo.execute(movieId);
         }
 
-    public void fetchCast(int movieId)
+    public void fetchOneMovieCast(int movieId)
         {
         FetchCastFromMovieTask fetchCastFromMovie = new FetchCastFromMovieTask();
         fetchCastFromMovie.execute(movieId);
+        }
+
+    public void fetchOneMovieImages(int movieId)
+        {
+        FetchImagesFromMovieTask fetchImagesFromMovie = new FetchImagesFromMovieTask();
+        fetchImagesFromMovie.execute(movieId);
         }
 
 

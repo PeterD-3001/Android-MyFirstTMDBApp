@@ -15,6 +15,7 @@ import android.widget.TextView;
 import com.nostra13.universalimageloader.core.ImageLoader;
 import com.omertron.themoviedbapi.MovieDbException;
 import com.omertron.themoviedbapi.model.Genre;
+import com.omertron.themoviedbapi.model.artwork.Artwork;
 import com.omertron.themoviedbapi.model.credits.MediaCreditCast;
 import com.omertron.themoviedbapi.model.discover.Discover;
 import com.omertron.themoviedbapi.model.movie.MovieBasic;
@@ -41,6 +42,7 @@ public class MovieDetailActivity extends AppCompatActivity
     private String genrelijst = "";
     private TextView avgVoteTextView;
     private LinearLayout myCastGallery;
+    private LinearLayout myScreenshotsGallery;
 
 
     @Override
@@ -64,6 +66,7 @@ public class MovieDetailActivity extends AppCompatActivity
         genresTextView = (TextView) findViewById(R.id.genres);
         avgVoteTextView = (TextView) findViewById(R.id.avgvote);
         myCastGallery = (LinearLayout) findViewById(R.id.mycastgallery);
+        myScreenshotsGallery = (LinearLayout) findViewById(R.id.myscreenshotgallery);
 
 
         URL imageUrl = AppController.getInstance().createMyImageUrl(movieInfo.getBackdropPath(), "w500");
@@ -75,8 +78,6 @@ public class MovieDetailActivity extends AppCompatActivity
         releaseDateView.setText(movieInfo.getReleaseDate());
         runTimeTextView.setText(movieInfo.getRuntime() + " minutes.");
 
-
-
         // String met genres samenstellen..
         for (Genre genre : movieInfo.getGenres())
             {
@@ -85,7 +86,8 @@ public class MovieDetailActivity extends AppCompatActivity
         genresTextView.setText(genrelijst);
         avgVoteTextView.setText(movieInfo.getVoteAverage() + " / 10 ");
 
-        AppController.getInstance().fetchCast(movieInfo.getId());
+        AppController.getInstance().fetchOneMovieCast(movieInfo.getId());
+        AppController.getInstance().fetchOneMovieImages(movieInfo.getId());
 
         // System.out.println(movieInfo.toString());
         }
@@ -124,6 +126,12 @@ public class MovieDetailActivity extends AppCompatActivity
         for (MediaCreditCast castMember : AppController.getInstance().cast)
             {
             myCastGallery.addView(insertPicture(castMember.getArtworkPath()));
+            }
+
+        for (Artwork artworkPiece : AppController.getInstance().artworkResultList)
+            {
+            myScreenshotsGallery.addView(insertPicture(artworkPiece.getFilePath()));
+            System.out.println(artworkPiece.getFilePath());
             }
         }
 

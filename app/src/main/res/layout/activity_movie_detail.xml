@@ -157,12 +157,47 @@
             android:padding="5dp"
             />
 
+        <TextView
+            android:id="@+id/cast_label"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Cast pictures: "
+            android:textStyle="bold"
+            android:layout_below="@+id/avgvote_label"
+            android:padding="5dp"
+            />
+
         <HorizontalScrollView
-            android:layout_below="@id/avgvote"
+            android:id="@+id/cast_view"
+            android:layout_below="@id/cast_label"
             android:layout_width="match_parent"
             android:layout_height="wrap_content" >
             <LinearLayout
                 android:id="@+id/mycastgallery"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                />
+        </HorizontalScrollView>
+
+        <TextView
+            android:id="@+id/screenshots_label"
+            android:layout_below="@+id/cast_view"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Screenshots: "
+            android:textStyle="bold"
+
+            android:padding="5dp"
+            />
+
+        <HorizontalScrollView
+            android:id="@+id/screenshot_view"
+            android:layout_below="@id/screenshots_label"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" >
+            <LinearLayout
+                android:id="@+id/myscreenshotgallery"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:orientation="horizontal"
