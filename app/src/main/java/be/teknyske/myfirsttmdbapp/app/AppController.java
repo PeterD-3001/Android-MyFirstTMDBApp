@@ -12,7 +12,9 @@ import com.nostra13.universalimageloader.core.display.FadeInBitmapDisplayer;
 import com.omertron.themoviedbapi.MovieDbException;
 import com.omertron.themoviedbapi.TheMovieDbApi;
 import com.omertron.themoviedbapi.model.config.Configuration;
+import com.omertron.themoviedbapi.model.credits.MediaCreditCast;
 import com.omertron.themoviedbapi.model.discover.Discover;
+import com.omertron.themoviedbapi.model.media.MediaCreditList;
 import com.omertron.themoviedbapi.model.movie.MovieBasic;
 import com.omertron.themoviedbapi.model.movie.MovieInfo;
 import com.omertron.themoviedbapi.results.ResultList;
@@ -33,13 +35,19 @@ import static be.teknyske.myfirsttmdbapp.R.id.recyclerView;
  * Created by cerseilannister on 25/10/16.
  **/
 
-/* Suggesties voor bijkomende features:
-   https://developers.themoviedb.org/3/getting-started
+/*
+== API Docs:
+ https://developers.themoviedb.org/3/getting-started
+
+== Suggesties voor bijkomende features:
       - Navigation Bar gebruiken
       - Genre selecteren (Dialog)
       - Search (magnifying glass) by Title
       - To watch / watched list
       - ConnectionDetector
+      - Infinite Scrolling Recycler View
+      - Trailers + Video
+      - Images ViewPager
 
 */
 
@@ -49,11 +57,12 @@ public class AppController extends Application
 {
     private static AppController instance;
     private TheMovieDbApi api;
-    private List<MovieBasic> movieList = new ArrayList<>();
     private Configuration configuration;
     final static String API_KEY = "4d47b8fb2f4125a5bd76ab0f464a6b5f";
-
     private List<OnMovieListChangedListener> allListeners = new ArrayList<>();
+    private List<MovieBasic> movieList = new ArrayList<>();
+    // public ?
+    public List<MediaCreditCast> cast = new ArrayList<>();
 
     // Appcontroller
     public static synchronized AppController getInstance()
@@ -69,20 +78,19 @@ public class AppController extends Application
         try
             {
             api = new TheMovieDbApi(API_KEY);
-            AppController.FetchConfiguration fetchConfiguration = new AppController.FetchConfiguration();
             // AsyncTask 1
+            AppController.FetchConfigurationTask fetchConfiguration = new AppController.FetchConfigurationTask();
             fetchConfiguration.execute();
 
-            AppController.FetchMovieInfo fetchMovieInfo = new AppController.FetchMovieInfo();
             // AsyncTask 2
+            AppController.FetchMovieInfoTask fetchMovieInfo = new AppController.FetchMovieInfoTask();
             fetchMovieInfo.execute();
 
             // This is too early !!!
             //AppController.FetchOneMovieInfo fetchOneMovieInfo = new AppController.FetchOneMovieInfo();
             //fetchOneMovieInfo.execute();
 
-            }
-        catch (MovieDbException e)
+            } catch (MovieDbException e)
             {
             e.printStackTrace();
             Log.e("TheMovieDBAPI", "Error: " + e.getMessage());
@@ -117,8 +125,7 @@ public class AppController extends Application
         try
             {
             imageURL = configuration.createImageUrl(imagePath, size);
-            }
-        catch (MovieDbException e)
+            } catch (MovieDbException e)
             {
             e.printStackTrace();
             }
@@ -148,9 +155,8 @@ public class AppController extends Application
         }
 
 
-
-    // ASYNC TASK 1
-    private class FetchMovieInfo extends AsyncTask<Void, Void, ResultList<MovieBasic>>
+    // ============================== ASYNC TASK 1 ===========================================
+    private class FetchMovieInfoTask extends AsyncTask<Void, Void, ResultList<MovieBasic>>
     {
         @Override
         protected ResultList<MovieBasic> doInBackground(Void... params)
@@ -158,8 +164,7 @@ public class AppController extends Application
             try
                 {
                 return api.getDiscoverMovies(new Discover());
-                }
-            catch (MovieDbException e)
+                } catch (MovieDbException e)
                 {
                 e.printStackTrace();
                 }
@@ -178,8 +183,8 @@ public class AppController extends Application
             }
     }
 
-    // ASYNC TASK 2
-    private class FetchConfiguration extends AsyncTask<Void, Void, Configuration>
+    // ============================= ASYNC TASK 2 ===========================================
+    private class FetchConfigurationTask extends AsyncTask<Void, Void, Configuration>
     {
         @Override
         protected Configuration doInBackground(Void... params)
@@ -204,25 +209,24 @@ public class AppController extends Application
             }
     }
 
-    // ASYNC TASK 3:
-    private class FetchOneMovieInfo extends AsyncTask<Integer, Void, MovieInfo>
-        // <input-type / progress / output-type>
+    // ================================ ASYNC TASK 3 ===========================================
+    private class FetchOneMovieInfoTask extends AsyncTask<Integer, Void, MovieInfo>
+            // <input-type / progress / output-type>
     {
         @Override
-        protected MovieInfo doInBackground(Integer ... params)
-        // Meaning: params is an array of an unknow number of parameters of type Integer
+        protected MovieInfo doInBackground(Integer... params)
+            // Meaning: params is an array of an unknow number of parameters of type Integer
+        {
+        try
             {
-            try
-                {
-                return api.getMovieInfo(params [0].intValue(), "en");
-                // Parameter params[0] is the Id of the selected movie !
-                }
-            catch (MovieDbException e)
-                {
-                e.printStackTrace();
-                }
-            return null;
+            return api.getMovieInfo(params[0].intValue(), "en");
+            // Parameter params[0] is the Id of the selected movie !
+            } catch (MovieDbException e)
+            {
+            e.printStackTrace();
             }
+        return null;
+        }
 
         @Override
         protected void onPostExecute(MovieInfo movieInfo)
@@ -237,12 +241,48 @@ public class AppController extends Application
             }
     }
 
+    // =============================== ASYNC TASK 4 ===========================================
+    private class FetchCastFromMovieTask extends AsyncTask<Integer, Void, MediaCreditList>
+    {
+        @Override
+        protected MediaCreditList doInBackground(Integer... params)
+            {
+            try
+                {
+                return api.getMovieCredits(params[0].intValue());
+                }
+            catch (MovieDbException e1)
+                {
+                e1.printStackTrace();
+                }
+            return null;
+            }
+
+        @Override
+        protected void onPostExecute(MediaCreditList media)
+            {
+            super.onPostExecute(media);
+            // todo intent movieDetails, pass through movieInfo in extras
+
+            cast.clear();
+            cast.addAll(media.getCast());
+            notifyAllListeners();
+
+            }
+    }
+
+
     public void fetchOneMovie(int movieId)
         {
-        AppController.FetchOneMovieInfo fetchOneMovieInfo = new AppController.FetchOneMovieInfo();
+        AppController.FetchOneMovieInfoTask fetchOneMovieInfo = new AppController.FetchOneMovieInfoTask();
         fetchOneMovieInfo.execute(movieId);
         }
 
+    public void fetchCast(int movieId)
+        {
+        FetchCastFromMovieTask fetchCastFromMovie = new FetchCastFromMovieTask();
+        fetchCastFromMovie.execute(movieId);
+        }
 
 
     // INTERFACE-SPECIFICATIE
@@ -250,4 +290,6 @@ public class AppController extends Application
     {
         void onMovieListChanged();
     }
+
+
 }

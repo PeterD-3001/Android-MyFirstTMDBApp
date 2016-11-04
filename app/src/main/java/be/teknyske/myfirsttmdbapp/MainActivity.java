@@ -44,16 +44,10 @@ https://developers.themoviedb.org/3/getting-started
 */
 
 
-public class MainActivity extends AppCompatActivity
+public class MainActivity
+        extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener, AppController.OnMovieListChangedListener
 {
-    /*
-    Moved to AppController
-    // private TheMovieDbApi api;
-    //final static String API_KEY = "4d47b8fb2f4125a5bd76ab0f464a6b5f";
-    //private List<MovieBasic>  movieList = new ArrayList<>();
-    */
-
     // private Configuration configuration;
 
     private RecyclerView recyclerView;
